@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#090713">
+<title>NEXUS CLIPS AI</title>
+
+<style>
+*{box-sizing:border-box}
+body{
+ margin:0;
+ background:#090713;
+ color:#fff;
+ font-family:Arial,sans-serif;
+}
+header{
+ padding:22px 7%;
+ border-bottom:1px solid #29213c;
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+}
+.logo{font-size:23px;font-weight:900}
+.logo span{color:#9b5cff}
+main{max-width:950px;margin:55px auto;padding:0 20px}
+.tag{color:#a98aff;letter-spacing:3px;font-size:12px}
+h1{font-size:clamp(36px,7vw,64px);line-height:1.05}
+h1 span{color:#a66aff}
+p{color:#bcb5cb;line-height:1.6}
+.card{
+ background:#151122;
+ border:1px solid #33264b;
+ border-radius:20px;
+ padding:24px;
+ margin-top:28px;
+}
+label{display:block;margin:16px 0 8px}
+input,select{
+ width:100%;
+ padding:14px;
+ border-radius:10px;
+ border:1px solid #44365c;
+ background:#0d0a17;
+ color:white;
+}
+button{
+ margin-top:18px;
+ background:linear-gradient(90deg,#7538dc,#2867e8);
+ color:white;
+ border:0;
+ border-radius:10px;
+ padding:15px;
+ width:100%;
+ font-size:16px;
+ font-weight:bold;
+}
+#status{margin-top:18px;white-space:pre-wrap;overflow-wrap:anywhere}
+.small{font-size:13px;color:#8f879f}
+.pill{border:1px solid #44365c;padding:7px 12px;border-radius:30px}
+a{color:#b99aff;display:block;margin:12px 0}
+</style>
+</head>
+
+<body>
+
+<header>
+ <div class="logo">NEXUS <span>CLIPS</span> AI</div>
+ <div class="pill">BETA</div>
+</header>
+
+<main>
+ <div class="tag">SEU ESTÚDIO DE CORTES</div>
+
+ <h1>Transforme vídeos em <span>cortes verticais.</span></h1>
+
+ <p>Envie um vídeo autorizado e gere cortes verticais para TikTok.</p>
+
+ <section class="card">
+  <h2>Criar cortes</h2>
+
+  <label>Escolha seu vídeo</label>
+  <input id="video" type="file" accept="video/*">
+
+  <label>Duração de cada corte</label>
+  <select id="duration">
+   <option value="60">60 segundos</option>
+   <option value="75">75 segundos</option>
+   <option value="90">90 segundos</option>
+  </select>
+
+  <button id="go">GERAR CORTES</button>
+
+  <div id="status"></div>
+ </section>
+
+ <section class="card">
+  <h2>Como funciona?</h2>
+  <p>1. Escolha um vídeo.</p>
+  <p>2. Escolha a duração.</p>
+  <p>3. Gere e baixe seus cortes.</p>
+
+  <p class="small">
+   Esta versão inicial cria cortes sequenciais.
+   Ainda não identifica momentos virais automaticamente.
+  </p>
+ </section>
+</main>
+
+<script>
+const btn=document.getElementById('go');
+const statusBox=document.getElementById('status');
+
+btn.onclick=async()=>{
+ const file=document.getElementById('video').files[0];
+
+ if(!file){
+  statusBox.textContent='Escolha um vídeo primeiro!';
+  return;
+ }
+
+ const duration=document.getElementById('duration').value;
+ const data=new FormData();
+
+ data.append('video',file);
+ data.append('duration',duration);
+
+ btn.disabled=true;
+ btn.textContent='PROCESSANDO...';
+ statusBox.textContent='Criando seus cortes...';
+
+ try{
+  const response=await fetch('/api/clips?duration='+duration,{
+   method:'POST',
+   body:data
+  });
+
+  const result=await response.json();
+
+  if(!response.ok) throw new Error(result.detail||'Erro');
+
+  statusBox.innerHTML='';
+
+  result.clips.forEach(clip=>{
+   const link=document.createElement('a');
+   link.href=clip.url;
+   link.textContent='⬇ Baixar '+clip.name;
+   link.download=clip.name;
+   statusBox.appendChild(link);
+  });
+
+ }catch(error){
+  statusBox.textContent='Erro: '+error.message;
+ }finally{
+  btn.disabled=false;
+  btn.textContent='GERAR CORTES';
+ }
+};
+</script>
+
+</body>
+</html>
