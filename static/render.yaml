@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: nexus-clips-ai
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/status
